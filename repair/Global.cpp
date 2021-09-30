@@ -26,6 +26,7 @@ struct Config cfg = {
   /* verbose                = */ false,
   /* validatePatches        = */ false,
   /* generateAll            = */ false,
+  /* dump                   = */ false,
   /* searchSpaceFile        = */ "",
   /* statisticsFile         = */ "",
   /* dataDir                = */ "",
