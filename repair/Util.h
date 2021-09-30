@@ -147,7 +147,7 @@ const unsigned long MAX_PRINT_TESTS = 5;
 std::string prettyPrintTests(const std::vector<std::string> &tests);
 
 
-void dumpSearchSpace(vector<Patch> &searchSpace,
-                     const fs::path &file,
-                     const vector<fs::path> &files,
+void dumpSearchSpace(std::vector<Patch> &searchSpace,
+                     const boost::filesystem::path &file,
+                     const std::vector<boost::filesystem::path> &files,
                      std::unordered_map<PatchID, double> &cost);
