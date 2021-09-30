@@ -28,6 +28,7 @@ struct Config {
   bool verbose;
   bool validatePatches;
   bool generateAll;
+  bool dump;
   std::string searchSpaceFile;
   std::string statisticsFile;
   std::string dataDir;
