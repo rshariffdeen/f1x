@@ -286,7 +286,10 @@ RepairStatus repair(Project &project,
     vector<fs::path> filePaths;
     for (auto &pFile: project.getFiles())
       filePaths.push_back(pFile.relpath);
-    dumpSearchSpace(searchSpace, path, filePaths, cost);
+      if (! fs::exists(patchOutput)) {
+          fs::create_directory(patchOutput);
+      }
+    dumpSearchSpace(searchSpace, path, filePaths, cost, patchOutput);
   }
 
   SearchEngine engine(tests, tester, runtime, getPartitionable(searchSpace), relatedTestIndexes);
