@@ -134,6 +134,7 @@ int main (int argc, char *argv[]) {
     ("disable-vteq", "[DEBUG] don't apply value-based analysis")
     ("disable-dteq", "[DEBUG] don't apply dependency-based analysis")
     ("disable-testprior", "[DEBUG] don't prioritize tests")
+    ("dump-patches", "dump patches")
     ;
 
   po::variables_map vm;
@@ -177,6 +178,9 @@ int main (int argc, char *argv[]) {
 
   if (vm.count("verbose")) {
     cfg.verbose = true;
+  }
+  if (vm.count("dump-patches")) {
+        cfg.dump = true;
   }
   initializeTrivialLogger(cfg.verbose);
 

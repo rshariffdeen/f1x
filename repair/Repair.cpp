@@ -112,10 +112,9 @@ bool validatePatch(Project &project,
     return true;
 }
 
-void dumpSearchSpace(Project &project, vector<Patch> &searchSpace,
-                     const fs::path &file,
-                     const vector<fs::path> &files,
-                     std::unordered_map<PatchID, double> &cost, const boost::filesystem::path &patchOutput) {
+void dumpPatches(Project &project,
+                 vector<Patch> &searchSpace,
+                 const boost::filesystem::path &patchOutput) {
     int i = 0;
     for (auto &el : searchSpace) {
         fs::path patchFile = patchOutput / (std::to_string(i) + ".patch");
@@ -295,16 +294,25 @@ RepairStatus repair(Project &project,
   BOOST_LOG_TRIVIAL(info) << "prioritizing search space";
   prioritize(searchSpace, cost);
 
+    if (cfg.dump) {
+        BOOST_LOG_TRIVIAL(info) << "dumping patches: " << patchOutput;
+        if (! fs::exists(patchOutput)) {
+            fs::create_directory(patchOutput);
+        }
+        dumpPatches(project, searchSpace, patchOutput);
+
+        if (searchSpace.size() > 0)
+            return RepairStatus::SUCCESS;
+        else
+            return RepairStatus::FAILURE;
+    }
   if (!cfg.searchSpaceFile.empty()) {
     auto path = fs::path(cfg.searchSpaceFile);
     BOOST_LOG_TRIVIAL(info) << "dumping search space: " << path;
     vector<fs::path> filePaths;
     for (auto &pFile: project.getFiles())
       filePaths.push_back(pFile.relpath);
-      if (! fs::exists(patchOutput)) {
-          fs::create_directory(patchOutput);
-      }
-    dumpSearchSpace(project, searchSpace, path, filePaths, cost, patchOutput);
+    dumpSearchSpace(searchSpace, path, filePaths, cost);
   }
 
   SearchEngine engine(tests, tester, runtime, getPartitionable(searchSpace), relatedTestIndexes);

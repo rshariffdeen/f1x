@@ -32,7 +32,6 @@
 #include "Util.h"
 #include "Config.h"
 #include "Typing.h"
-#include "Project.h"
 
 namespace fs = boost::filesystem;
 namespace json = rapidjson;
@@ -565,3 +564,13 @@ std::string prettyPrintTests(const std::vector<std::string> &tests) {
 }
 
 
+void dumpSearchSpace(vector<Patch> &searchSpace,
+                     const fs::path &file,
+                     const vector<fs::path> &files,
+                     std::unordered_map<PatchID, double> &cost) {
+    fs::ofstream os(file);
+    for (auto &el : searchSpace) {
+        os << std::setprecision(3) << cost[el.id] << " "
+           << visualizeElement(el, files[el.app->location.fileId]) << "\n";
+    }
+}
