@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include "Config.h"
 #include "Core.h"
+#include "Project.h"
 
 
 // this need to be removed when we use a custom timeout function:
@@ -146,7 +147,3 @@ const unsigned long MAX_PRINT_TESTS = 5;
 std::string prettyPrintTests(const std::vector<std::string> &tests);
 
 
-void dumpSearchSpace(Project &project, std::vector<Patch> &searchSpace,
-                     const boost::filesystem::path &file,
-                     const std::vector<boost::filesystem::path> &files,
-                     std::unordered_map<PatchID, double> &cost, const boost::filesystem::path &patchOutput);

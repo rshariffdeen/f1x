@@ -112,6 +112,21 @@ bool validatePatch(Project &project,
     return true;
 }
 
+void dumpSearchSpace(Project &project, vector<Patch> &searchSpace,
+                     const fs::path &file,
+                     const vector<fs::path> &files,
+                     std::unordered_map<PatchID, double> &cost, const boost::filesystem::path &patchOutput) {
+    int i = 0;
+    for (auto &el : searchSpace) {
+        fs::path patchFile = patchOutput / (std::to_string(i) + ".patch");
+        unsigned fileId = el.app->location.fileId;
+        project.applyPatch(el);
+        project.computeDiff(project.getFiles()[fileId], patchFile);
+        project.restoreOriginalFiles();
+        i++;
+    }
+}
+
 
 RepairStatus repair(Project &project,
                     TestingFramework &tester,
@@ -289,7 +304,7 @@ RepairStatus repair(Project &project,
       if (! fs::exists(patchOutput)) {
           fs::create_directory(patchOutput);
       }
-    dumpSearchSpace(searchSpace, path, filePaths, cost, patchOutput);
+    dumpSearchSpace(project, searchSpace, path, filePaths, cost, patchOutput);
   }
 
   SearchEngine engine(tests, tester, runtime, getPartitionable(searchSpace), relatedTestIndexes);
