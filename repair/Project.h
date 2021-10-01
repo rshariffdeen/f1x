@@ -51,6 +51,8 @@ class Project {
   void deleteCoverageFiles();
   void computeDiff(const ProjectFile &file,
                    const boost::filesystem::path &outputFile);
+  void computeDiffFinal(const ProjectFile &file,
+                     const boost::filesystem::path &outputFile);
   bool instrumentFile(const ProjectFile &file,
                       const boost::filesystem::path &outputFile,
                       const boost::filesystem::path *profile = nullptr);

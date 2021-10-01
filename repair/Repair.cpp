@@ -419,7 +419,7 @@ RepairStatus repair(Project &project,
         fs::path patchFile = patchOutput / (std::to_string(i) + ".patch");
         project.applyPatch(plausiblePatches[i]);
         unsigned fileId = plausiblePatches[i].app->location.fileId;
-        project.computeDiff(project.getFiles()[fileId], patchFile);
+        project.computeDiffFinal(project.getFiles()[fileId], patchFile);
         project.restoreOriginalFiles();
       }
     }

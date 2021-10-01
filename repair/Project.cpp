@@ -284,6 +284,24 @@ void Project::deleteCoverageFiles() {
   }
 }
 
+void Project::computeDiffFinal(const ProjectFile &file,
+                          const fs::path &output) {
+    {
+        fs::path a = fs::path("a") / file.relpath;
+        fs::path b = fs::path("b") / file.relpath;
+        fs::ofstream ofs(output);
+        ofs << "--- " << a.string() << "\n"
+            << "+++ " << b.string() << "\n";
+    }
+    unsigned id = getFileId(file);
+
+    fs::path fromFile = fs::path(cfg.dataDir) / fs::path("original" + std::to_string(id) + ".c");
+    fs::path toFile = fs::path(cfg.dataDir) / fs::path("patched" + std::to_string(id) + ".c");
+    string cmd = "diff -U 0 " + fromFile.string() + " " + toFile.string() + " >> " + output.string();
+    BOOST_LOG_TRIVIAL(debug) << "cmd: " << cmd;
+    std::system(cmd.c_str());
+}
+
 void Project::computeDiff(const ProjectFile &file,
                           const fs::path &output) {
   {
