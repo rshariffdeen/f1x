@@ -120,7 +120,7 @@ void dumpPatches(Project &project,
         fs::path patchFile = patchOutput / (std::to_string(i) + "_f1x.patch");
         unsigned fileId = el.app->location.fileId;
         project.applyPatch(el);
-        project.computeDiff(project.getFiles()[fileId], patchFile);
+        project.computeDiffFinal(project.getFiles()[fileId], patchFile);
         project.restoreOriginalFiles();
         i++;
     }

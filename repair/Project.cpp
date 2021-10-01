@@ -297,7 +297,7 @@ void Project::computeDiffFinal(const ProjectFile &file,
 
     fs::path fromFile = fs::path(cfg.dataDir) / fs::path("original" + std::to_string(id) + ".c");
     fs::path toFile = fs::path(cfg.dataDir) / fs::path("patched" + std::to_string(id) + ".c");
-    string cmd = "diff -U 0 " + fromFile.string() + " " + toFile.string() + " >> " + output.string();
+    string cmd = "diff -U 0 " + fromFile.string() + " " + toFile.string() + " | awk 'NR > 3 { print }' >> " + output.string();
     BOOST_LOG_TRIVIAL(debug) << "cmd: " << cmd;
     std::system(cmd.c_str());
 }
