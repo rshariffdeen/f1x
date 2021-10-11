@@ -72,6 +72,7 @@ SearchEngine::SearchEngine(const std::vector<std::string> &tests,
 
 
 void SearchEngine::showProgress(unsigned long current, unsigned long total) {
+      BOOST_LOG_TRIVIAL(info) << "explored count: " << current;
       if ((100 * current) / total >= progress) {
       BOOST_LOG_TRIVIAL(info) << "exploration progress: " << progress << "%";
       progress += SHOW_PROGRESS_STEP;
