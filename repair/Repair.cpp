@@ -25,6 +25,8 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <iostream>
+#include <thread>
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/log/trivial.hpp>
@@ -112,17 +114,42 @@ bool validatePatch(Project &project,
     return true;
 }
 
+class thread_obj{
+public:
+    void operator()(const ProjectFile &file,
+                    const fs::path &output, const unsigned fileId){
+        {
+            fs::path a = fs::path("a") / file.relpath;
+            fs::path b = fs::path("b") / file.relpath;
+            fs::ofstream ofs(output);
+            ofs << "--- " << a.string() << "\n"
+                << "+++ " << b.string() << "\n";
+        }
+
+        fs::path fromFile = fs::path(cfg.dataDir) / fs::path("original" + std::to_string(fileId) + ".c");
+        fs::path toFile = fs::path(cfg.dataDir) / fs::path("patched" + std::to_string(fileId) + ".c");
+        string cmd = "diff -U 0 " + fromFile.string() + " " + toFile.string() + " | awk 'NR > 2 { print }' >> " + output.string();
+        BOOST_LOG_TRIVIAL(debug) << "cmd: " << cmd;
+        std::system(cmd.c_str());
+    }
+};
+
 void dumpPatches(Project &project,
                  vector<Patch> &searchSpace,
                  const boost::filesystem::path &patchOutput) {
     int i = 0;
+    std::vector<std::thread> threads;
     for (auto &el : searchSpace) {
         fs::path patchFile = patchOutput / (std::to_string(i) + "_f1x.patch");
         unsigned fileId = el.app->location.fileId;
         project.applyPatch(el);
-        project.computeDiffFinal(project.getFiles()[fileId], patchFile);
+        threads.push_back(std::thread(thread_obj(), project.getFiles()[fileId], patchFile, fileId));
+//        project.computeDiffFinal(project.getFiles()[fileId], patchFile, fileId);
         project.restoreOriginalFiles();
         i++;
+    }
+    for (auto &th : threads) {
+        th.join();
     }
 }
 

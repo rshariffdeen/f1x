@@ -23,6 +23,7 @@ target_link_libraries(f1x
   f1xRepair
   ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
+  Threads::Threads
   rt)
 
 
