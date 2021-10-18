@@ -340,6 +340,10 @@ RepairStatus repair(Project &project,
     for (auto &pFile: project.getFiles())
       filePaths.push_back(pFile.relpath);
     dumpSearchSpace(searchSpace, path, filePaths, cost);
+      if (searchSpace.size() > 0)
+          return RepairStatus::SUCCESS;
+      else
+          return RepairStatus::FAILURE;
   }
 
   SearchEngine engine(tests, tester, runtime, getPartitionable(searchSpace), relatedTestIndexes);
