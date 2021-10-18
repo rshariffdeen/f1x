@@ -385,14 +385,23 @@ std::string visualizeChange(const Patch &el) {
 }                                                          
 
 
-std::string visualizeElement(const Patch &el,
+std::string visualizeElement(const Patch &patch,
                              const boost::filesystem::path &file) {
   std::stringstream result;
-  result << visualizePatchID(el.id) << " "
-         << visualizeTransformationSchema(el.app->schema) 
-         << " [" << visualizeSynthesisRule(el.meta.rule) << "] "
-         << visualizeChange(el)
-         << " in " << file.string() << ":" << el.app->location.beginLine;
+    unsigned beginLine = patch.app->location.beginLine;
+    unsigned beginColumn = patch.app->location.beginColumn;
+    unsigned endLine = patch.app->location.endLine;
+    unsigned endColumn = patch.app->location.endColumn;
+
+  result << visualizePatchID(patch.id) << " "
+//         << visualizeTransformationSchema(patch.app->schema)
+          << beginLine << " "
+          << beginColumn << " "
+          << endLine << " "
+          << endColumn << " "
+//         << " [" << visualizeSynthesisRule(patch.meta.rule) << "] "
+         << expressionToString(patch.modified) << " "
+         << " in " << file.string() << ":" << patch.app->location.beginLine;
   return result.str();
 }                                                          
 
