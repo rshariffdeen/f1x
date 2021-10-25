@@ -140,6 +140,7 @@ void dumpPatches(Project &project,
     int i = 0;
     std::vector<std::thread> threads;
     for (auto &el : searchSpace) {
+        BOOST_LOG_TRIVIAL(info) << "explored count: " << i+1;
         fs::path patchFile = patchOutput / (std::to_string(i) + "_f1x.patch");
         unsigned fileId = el.app->location.fileId;
         project.applyPatch(el);
