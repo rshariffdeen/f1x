@@ -83,12 +83,13 @@ bool validatePatch(Project &project,
                    TestingFramework &tester,
                    const std::vector<std::string> &tests,
                    Patch &patch) {
-
     bool appSuccess = project.applyPatch(patch);
     if (! appSuccess) {
       BOOST_LOG_TRIVIAL(warning) << "patch application returned non-zero code";
     }
+    const clock_t build_start_t = clock();
     bool rebuildSuccess = project.build();
+    BOOST_LOG_TRIVIAL(info) << "build time: " << float(clock()-build_start_t)/CLOCKS_PER_SEC;
     if (! rebuildSuccess) {
       BOOST_LOG_TRIVIAL(warning) << "compilation with patch returned non-zero exit code";
     }
@@ -103,7 +104,7 @@ bool validatePatch(Project &project,
     }
 
     project.restoreOriginalFiles();
-    
+
     if (!failingTests.empty()) {
       BOOST_LOG_TRIVIAL(warning) << "generated patch failed validation";
       for (auto &t : failingTests) {
@@ -247,12 +248,12 @@ RepairStatus repair(Project &project,
 
   if (cfg.patchPrioritization == PatchPrioritization::SEMANTIC_DIFF)
     project.deleteCoverageFiles();
- 
+
   fs::path profile = profiler.getProfile();
 
   auto relatedTestIndexes = profiler.getRelatedTestIndexes();
   BOOST_LOG_TRIVIAL(info) << "number of locations: " << relatedTestIndexes.size();
-  
+
   vector<fs::path> saFiles;
 
   BOOST_LOG_TRIVIAL(info) << "applying transfomation schemas to source files";
@@ -275,7 +276,7 @@ RepairStatus repair(Project &project,
 
   BOOST_LOG_TRIVIAL(debug) << "loading candidate locations";
   vector<shared_ptr<SchemaApplication>> sas = loadSchemaApplications(saFiles);
-  
+
   BOOST_LOG_TRIVIAL(debug) << "inferring types";
   for (auto sa : sas) {
     Type context;
@@ -371,7 +372,7 @@ RepairStatus repair(Project &project,
     if (!moreThanOneFound.count(patch.app->id) || cfg.verbose) {
       fs::path relpath = project.getFiles()[patch.app->location.fileId].relpath;
       if (!fixLocations.count(patch.app->id) || cfg.verbose) {
-        BOOST_LOG_TRIVIAL(info) << "plausible patch: " << visualizeChange(patch) 
+        BOOST_LOG_TRIVIAL(info) << "plausible patch: " << visualizeChange(patch)
                                 << " in " << relpath.string() << ":" << patch.app->location.beginLine;
       } else {
         BOOST_LOG_TRIVIAL(info) << "more patches found in " << relpath.string() << ":" << patch.app->location.beginLine;
@@ -383,8 +384,11 @@ RepairStatus repair(Project &project,
 
     if (! cfg.generateAll) {
       bool valid = true;
-      if (cfg.validatePatches)
-        validatePatch(project, tester, tests, patch);
+      if (cfg.validatePatches) {
+          const clock_t validate_start_t = clock();
+          validatePatch(project, tester, tests, patch);
+          BOOST_LOG_TRIVIAL(info) << "validation time: " << float(clock()-validate_start_t)/CLOCKS_PER_SEC;
+      }
       if (valid) {
         fixLocations.insert(patch.app->id);
         plausiblePatches.push_back(patch);
@@ -407,9 +411,11 @@ RepairStatus repair(Project &project,
   if (cfg.validatePatches && cfg.generateAll && plausiblePatches.size() > 0) {
     vector<Patch> validPatches;
     for (auto &patch : plausiblePatches) {
+      const clock_t validate_start_t = clock();
       if (validatePatch(project, tester, tests, patch)) {
         validPatches.push_back(patch);
       }
+      BOOST_LOG_TRIVIAL(info) << "validation time: " << float(clock()-validate_start_t)/CLOCKS_PER_SEC;
     }
     plausiblePatches = validPatches;
   }
