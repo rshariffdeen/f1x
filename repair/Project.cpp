@@ -220,14 +220,14 @@ bool Project::build() {
 
 bool Project::buildWithRuntime(const fs::path &header) {
   BOOST_LOG_TRIVIAL(info) << "building project with f1x runtime";
-
+  const clock_t build_start_t = clock();
   bool success = buildInEnvironment({ {"CC", "f1x-cc"},
                                       {"CXX", "f1x-cxx"},
                                       {"F1X_RUNTIME_H", header.string()},
                                       {"F1X_RUNTIME_LIB", cfg.dataDir},
                                       {"LD_LIBRARY_PATH", cfg.dataDir} },
                                     buildCmd);
-
+  BOOST_LOG_TRIVIAL(info) << "build time: " << float(clock()-build_start_t)/CLOCKS_PER_SEC;
   return success;
 }
 
