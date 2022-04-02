@@ -414,15 +414,36 @@ RepairStatus repair(Project &project,
   }
 
   // validate patches if needed
+  BOOST_LOG_TRIVIAL(info) << "plausible patches: " << plausiblePatches.size();
   if (cfg.validatePatches && cfg.generateAll && plausiblePatches.size() > 0) {
     vector<Patch> validPatches;
-    for (auto &patch : plausiblePatches) {
-      const clock_t validate_start_t = clock();
-      if (validatePatch(project, tester, tests, patch)) {
-        validPatches.push_back(patch);
+      if (! fs::exists(patchOutput)) {
+          fs::create_directory(patchOutput);
       }
-      BOOST_LOG_TRIVIAL(info) << "validation time: " << float(clock()-validate_start_t)/CLOCKS_PER_SEC;
-    }
+      unordered_set<unsigned long> patchLocations;
+      for (int i=0; i<plausiblePatches.size(); i++) {
+
+          time_t begin, end, duration;
+          time(&begin);
+          bool is_valid = validatePatch(project, tester, tests, plausiblePatches[i]);
+          time(&end);
+          duration = end - begin;
+          BOOST_LOG_TRIVIAL(info) << "validation time: " << float(duration);
+          if (is_valid){
+              if (cfg.outputOnePerLocation && patchLocations.count(plausiblePatches[i].app->id))
+                  continue;
+              patchLocations.insert(plausiblePatches[i].app->id);
+              fs::path patchFile = patchOutput / (std::to_string(i++) + ".patch");
+              project.applyPatch(plausiblePatches[i]);
+              unsigned fileId = plausiblePatches[i].app->location.fileId;
+              project.computeDiffFinal(project.getFiles()[fileId], patchFile);
+              project.restoreOriginalFiles();
+              validPatches.push_back(plausiblePatches[i]);
+          }
+
+
+      }
+
     plausiblePatches = validPatches;
   }
 
@@ -456,16 +477,16 @@ RepairStatus repair(Project &project,
         fs::create_directory(patchOutput);
       }
       unordered_set<unsigned long> patchLocations;
-      for (int i=0; i<plausiblePatches.size(); i++) {
-        if (cfg.outputOnePerLocation && patchLocations.count(plausiblePatches[i].app->id))
-          continue;
-        patchLocations.insert(plausiblePatches[i].app->id);
-        fs::path patchFile = patchOutput / (std::to_string(i) + ".patch");
-        project.applyPatch(plausiblePatches[i]);
-        unsigned fileId = plausiblePatches[i].app->location.fileId;
-        project.computeDiffFinal(project.getFiles()[fileId], patchFile);
-        project.restoreOriginalFiles();
-      }
+//      for (int i=0; i<plausiblePatches.size(); i++) {
+//        if (cfg.outputOnePerLocation && patchLocations.count(plausiblePatches[i].app->id))
+//          continue;
+//        patchLocations.insert(plausiblePatches[i].app->id);
+//        fs::path patchFile = patchOutput / (std::to_string(i) + ".patch");
+//        project.applyPatch(plausiblePatches[i]);
+//        unsigned fileId = plausiblePatches[i].app->location.fileId;
+//        project.computeDiffFinal(project.getFiles()[fileId], patchFile);
+//        project.restoreOriginalFiles();
+//      }
     }
   }
 
