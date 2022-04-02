@@ -87,9 +87,12 @@ bool validatePatch(Project &project,
     if (! appSuccess) {
       BOOST_LOG_TRIVIAL(warning) << "patch application returned non-zero code";
     }
-    const clock_t build_start_t = clock();
+    time_t begin, end, duration;
+    time(&begin);
     bool rebuildSuccess = project.build();
-    BOOST_LOG_TRIVIAL(info) << "build time: " << float(clock()-build_start_t)/CLOCKS_PER_SEC;
+    time(&end);
+    duration = end - begin;
+    BOOST_LOG_TRIVIAL(info) << "build time: " << float(duration);
     if (! rebuildSuccess) {
       BOOST_LOG_TRIVIAL(warning) << "compilation with patch returned non-zero exit code";
     }
@@ -385,9 +388,12 @@ RepairStatus repair(Project &project,
     if (! cfg.generateAll) {
       bool valid = true;
       if (cfg.validatePatches) {
-          const clock_t validate_start_t = clock();
+          time_t begin, end, duration;
+          time(&begin);
           validatePatch(project, tester, tests, patch);
-          BOOST_LOG_TRIVIAL(info) << "validation time: " << float(clock()-validate_start_t)/CLOCKS_PER_SEC;
+          time(&end);
+          duration = end - begin;
+          BOOST_LOG_TRIVIAL(info) << "validation time: " << float(duration);
       }
       if (valid) {
         fixLocations.insert(patch.app->id);
